@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>چک‌لیست روزانه – امیر محمد (v7.4.3)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e; --accent-2:#60a5fa; --danger:#ef4444; --ring:#334155; }
+    [data-theme="light"]{ --bg:#f7fafc; --card:#ffffff; --muted:#64748b; --text:#0f172a; --accent:#16a34a; --accent-2:#2563eb; --danger:#dc2626; --ring:#e2e8f0; }
+
+    *{box-sizing:border-box}
+    html,body{height:100%; overflow-x:hidden;}
+    body{margin:0;font-family:"Vazirmatn",system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans",sans-serif;background:linear-gradient(120deg,var(--bg),#0f172a 55%,var(--bg));color:var(--text)}
+    .wrap{max-width:1180px;margin:auto;padding:32px 20px 120px}
+    .title{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--ring);padding:16px 20px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+    h1{margin:0;font-weight:800;font-size:24px;letter-spacing:.2px}
+    .sub{color:var(--muted);font-size:13px}
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    button,.chip,select,.input,textarea{background:var(--card);border:1px solid var(--ring);color:var(--text);padding:9px 12px;border-radius:12px;cursor:pointer;font-size:13px}
+    textarea{width:100%;min-height:120px;resize:vertical}
+    button:hover{border-color:var(--accent)}
+    .chip input{accent-color:var(--accent);margin-left:6px}
+    select,.input{cursor:auto}
+
+    .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+    .progress{background:var(--card);border:1px solid var(--ring);border-radius:12px;padding:10px}
+    .progress-head{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+    .bar{height:12px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+    .bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--danger),var(--accent));transition:width .3s ease}
+    .quote{grid-column:1 / -1;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--ring);border-radius:16px;padding:14px;color:var(--text);font-size:14px}
+
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+    .grid-goals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width: 980px){ .kpis{grid-template-columns:1fr} .grid-goals{grid-template-columns:1fr} }
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid var(--ring);border-radius:18px;padding:16px 16px 8px; overflow:hidden}
+    .card h2{margin:0 0 10px;font-size:18px}
+    .hint{color:var(--muted);font-size:12px;margin:0 0 10px}
+
+    ul{list-style:none;margin:0;padding:0}
+    li{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:12px;border:1px solid transparent}
+    li:hover{border-color:var(--accent-2)}
+    input[type="checkbox"][data-role="task"], input[type="checkbox"][data-role="master"], input[type="checkbox"][data-role="goal"]{inline-size:18px;block-size:18px;accent-color:var(--accent)}
+    .task-label{flex:1; min-width:0; word-break:break-word}
+
+    .footer{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:var(--muted);font-size:12px}
+    .badge{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#16a34a}
+
+    .group-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .group-actions input[type="text"], .task-input{flex:1;min-width:180px;padding:10px 12px;border-radius:12px;border:1px solid var(--ring);background:var(--card);color:var(--text)}
+    .group-head{display:flex;align-items:center;gap:8px;justify-content:space-between}
+    .group-title{font-weight:700; cursor:text}
+    .danger{border-color:#7f1d1d;background:rgba(239,68,68,.08);color:#b91c1c; white-space:nowrap}
+
+    .pomodoro{display:flex;align-items:center;gap:8px;flex-wrap:wrap; font-size:12px; color:var(--muted)}
+    .pomodoro button{font-size:12px; padding:6px 10px}
+    .medals{display:flex;gap:8px;flex-wrap:wrap}
+    .chart{background:var(--card);border:1px solid var(--ring);border-radius:12px;padding:12px}
+
+    .panel{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid var(--ring);border-radius:18px;padding:14px}
+    .panel h3{margin:0 0 8px; font-size:16px}
+
+    .notes-list li{align-items:flex-start}
+    .notes-list .text{flex:1}
+
+    .journal-entry{border:1px dashed var(--ring); padding:10px; border-radius:12px; margin:6px 0}
+
+    [draggable="true"]{ user-select:none }
+    .drag-over{ outline:2px dashed var(--accent-2); outline-offset:4px }
+
+    .focus-on .card{display:none}
+    .focus-on .card.focus-target{display:block}
+
+    @media (max-width: 820px){ .grid{grid-template-columns:1fr} .title{flex-direction:column; align-items:stretch} .controls{width:100%; gap:8px} .controls button, .controls .chip, .controls select{flex:1} }
+    @media (max-width: 640px){ h1{font-size:20px} .sub{font-size:12px} .card{padding:14px 14px 6px} .card h2{font-size:16px} .group-actions{flex-direction:column} .group-actions input, .group-actions button, .group-actions select{width:100%} li{flex-wrap:wrap; gap:8px} li button{margin-inline-start:auto} .btn-del-task{order:3; width:100%} }
+    @media (max-width: 400px){ button, .chip, select{padding:8px 10px; font-size:13px} .task-input{min-width:0} }
+
+    @media print{ body{background:#fff;color:#000} .title,.controls,.footer,.panel{display:none} .card{background:#fff;border-color:#ddd} input[type="checkbox"]{accent-color:#111} }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="appRoot">
+    <div class="title">
+      <div>
+        <div class="sub">امروز: <span id="today"></span> • <span class="badge">پیشرفت ذخیره می‌شود</span></div>
+      </div>
+      <div class="controls">
+        <label class="chip" title="اگر امروز تعطیل است فعال کن">
+          <input id="isHoliday" type="checkbox"> امروز تعطیله؟
+        </label>
+        <select id="profileSelect" title="پروفایل">
+          <option value="default">پروفایل: پیش‌فرض</option>
+        </select>
+        <button id="newProfileBtn">+ پروفایل جدید</button>
+        <button id="focusModeBtn" type="button">حالت تمرکز</button>
+        <button id="themeBtn" type="button">تم: تیره/روشن</button>
+        <button id="exportBtn" type="button">خروجی (JSON)</button>
+        <button id="importBtn" type="button">ورودی (JSON)</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <button id="icsBtn" type="button">خروجی تقویم (ICS)</button>
+        <button id="resetToday" type="button">پاک کردن تیک‌های امروز</button>
+        <button id="resetAll" type="button">پاک کردن همه</button>
+        <button type="button" onclick="window.print()">چاپ</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="progress">
+        <div class="progress-head">
+          <span>پیشرفت امروز (چک‌لیست)</span>
+          <strong id="progressPct">۰٪</strong>
+        </div>
+        <div class="bar"><div class="bar-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-head"><span>هدف روزانه</span> <strong id="dailyGoalPct">—</strong></div>
+        <div class="bar"><div class="bar-fill" id="dailyGoalFill"></div></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-head"><span>هدف هفتگی</span> <strong id="weeklyGoalPct">—</strong></div>
+        <div class="bar"><div class="bar-fill" id="weeklyGoalFill"></div></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-head"><span>هدف ماهانه</span> <strong id="monthlyGoalPct">—</strong></div>
+        <div class="bar"><div class="bar-fill" id="monthlyGoalFill"></div></div>
+      </div>
+
+      <div class="quote" style="grid-column:1 / -1">
+        <span id="quoteText">در حال بارگذاری نقل‌قول…</span>
+      </div>
+
+      <div class="chart">
+        <div class="progress-head"><span>گزارش ۷ روز اخیر (٪ تکمیل چک‌لیست)</span><span id="weeklyAvg">—</span></div>
+        <canvas id="weeklyChart" height="120"></canvas>
+      </div>
+      <div class="chart">
+        <div class="progress-head"><span>گزارش ۳۰ روز اخیر (٪ تکمیل)</span><span id="monthlyAvg">—</span></div>
+        <canvas id="monthChart" height="120"></canvas>
+      </div>
+
+      <div class="panel" style="grid-column:1 / -1">
+        <h3>یادآورها ⏰ (انتخابگر تاریخ شمسی + ساعت)</h3>
+        <div class="group-actions">
+          <select id="remYear"></select>
+          <select id="remMonth"></select>
+          <select id="remDay"></select>
+          <input id="remTime" class="input" type="time"/>
+          <input id="remText" class="input" type="text" placeholder="متن یادآور (اختیاری)"/>
+          <label class="chip"><input id="remDaily" type="checkbox"> تکرار روزانه</label>
+          <button id="addReminder">افزودن یادآور</button>
+        </div>
+        <ul id="remindersList"></ul>
+        <div class="hint">* اگر «تکرار روزانه» فعال باشد، تاریخ نادیده گرفته می‌شود.</div>
+      </div>
+
+      <div class="panel" style="grid-column:1 / -1">
+        <h3>مدال‌ها 🏅</h3>
+        <div id="medalRack" class="medals"></div>
+      </div>
+    </div>
+
+    <div class="grid" id="gridRoot">
+      <section class="card" style="grid-column:1 / -1">
+        <h2>🧩 کارهای سفارشی</h2>
+        <p class="hint">تیتر جدید اضافه کن؛ تیک تیتر فقط انتخاب/لغو همه زیرتیترهاست و در درصد پیشرفت حساب نمی‌شود.</p>
+        <div class="group-actions">
+          <input id="newGroupTitle" type="text" placeholder="نام تیتر اصلی (مثلاً: تمرین بدنسازی)" />
+          <button id="addGroupBtn" type="button">افزودن تیتر</button>
+        </div>
+        <div id="customGroupsTop"></div>
+      </section>
+
+      <!-- ثابت‌ها
+      <section class="card" id="early">
+        <h2>⏰ صبح زود – شروع قدرتمند</h2>
+        <p class="hint">ساعت ۵ صبح بیدار شو و روتین زبانت رو انجام بده.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="wake"><label class="task-label editable-task" for="wake">بیدار شدن به‌موقع (۵ صبح)</label></li>
+        </ul>
+      </section>
+
+      <section class="card" id="language">
+        <h2>📚 روتین زبان</h2>
+        <p class="hint">AppEuni، واژگان، TED، جمله‌سازی و شنیداری.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="appEuni"><label class="task-label editable-task" for="appEuni">تمرین AppEuni</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="vocab"><label class="task-label editable-task" for="vocab">مرور و یادگیری واژگان</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="ted"><label class="task-label editable-task" for="ted">دیدن یک ویدیو TED</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="sentences"><label class="task-label editable-task" for="sentences">جمله‌سازی با کلمات جدید</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="listening"><label class="task-label editable-task" for="listening">گوش دادن و تمرکز روی لغات جدید</label></li>
+        </ul>
+      </section>
+
+      <section class="card" id="breakfastCard">
+        <h2>🍳 صبحانه</h2>
+        <p class="hint">سوخت تمیز برای روز پرانرژی.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="breakfast"><label class="task-label editable-task" for="breakfast">خوردن صبحانه کامل</label></li>
+        </ul>
+      </section>
+
+      <section class="card" id="workday">
+        <h2>🏢 روز غیرتعطیل – شرکت</h2>
+        <p class="hint">حضور به‌موقع و تمرکز روی تایمیناسیون.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="commute"><label class="task-label editable-task" for="commute">رفتن به شرکت</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="timinasionWork"><label class="task-label editable-task" for="timinasionWork">کار روی پروژه «تایمیناسیون»</label></li>
+        </ul>
+      </section>
+
+      <section class="card" id="holiday" style="display:none">
+        <h2>🗓 روز تعطیل – رشد شخصی</h2>
+        <p class="hint">روتین زبان، تایمیناسیون و آموزش‌های جدید.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="holidayLanguage"><label class="task-label editable-task" for="holidayLanguage">انجام کامل روتین زبان</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="holidayTiminasion"><label class="task-label editable-task" for="holidayTiminasion">کار روی پروژه «تایمیناسیون»</label></li>
+          <li draggable="true"><input data-role="task" type="checkbox" id="holidayLearning"><label class="task-label editable-task" for="holidayLearning">یادگیری/تمرین یک آموزش جدید</label></li>
+        </ul>
+      </section>
+
+      <section class="card" style="grid-column:1 / -1">
+        <h2>💾 تمرین روزانه SQL (همه روزها)</h2>
+        <p class="hint">هر روز یک تمرین یا بهبود کوچک در SQL انجام بده.</p>
+        <ul>
+          <li draggable="true"><input data-role="task" type="checkbox" id="sql"><label class="task-label editable-task" for="sql">تمرین/توسعه با SQL</label></li>
+        </ul>
+      </section> -->
+
+      <!-- Goals Manager (سه کادر جدا) -->
+      <section class="card" style="grid-column:1 / -1">
+        <h2>🎯 مدیریت اهداف</h2>
+        <p class="hint">درصد هر بخش = تعداد انجام‌شده ÷ تعداد کل هدف‌های همان بخش.</p>
+        <div class="grid-goals">
+          <!-- Daily -->
+          <div class="panel">
+            <h3>روزانه</h3>
+            <div class="group-actions">
+              <select id="goalYearDaily"></select>
+              <select id="goalMonthDaily"></select>
+              <select id="goalDayDaily"></select>
+              <input id="goalInputDaily" type="text" placeholder="هدف روزانه..." />
+              <button id="addGoalDailyBtn">افزودن</button>
+            </div>
+            <ul id="goalListDaily"></ul>
+          </div>
+          <!-- Weekly -->
+          <div class="panel">
+            <h3>هفتگی</h3>
+            <div class="group-actions">
+              <select id="goalYearWeekly"></select>
+              <select id="goalMonthWeekly"></select>
+              <select id="goalDayWeekly"></select>
+              <input id="goalInputWeekly" type="text" placeholder="هدف هفتگی..." />
+              <button id="addGoalWeeklyBtn">افزودن</button>
+            </div>
+            <ul id="goalListWeekly"></ul>
+          </div>
+          <!-- Monthly -->
+          <div class="panel">
+            <h3>ماهانه</h3>
+            <div class="group-actions">
+              <select id="goalYearMonthly"></select>
+              <select id="goalMonthMonthly"></select>
+              <select id="goalDayMonthly"></select>
+              <input id="goalInputMonthly" type="text" placeholder="هدف ماهانه..." />
+              <button id="addGoalMonthlyBtn">افزودن</button>
+            </div>
+            <ul id="goalListMonthly"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notes Board -->
+      <section class="card" style="grid-column:1 / -1">
+        <h2>🗒️ یادداشت‌های امروز (تایپی + حذف)</h2>
+        <div class="group-actions">
+          <input id="noteInput" type="text" placeholder="یادداشت کوتاه..."/>
+          <button id="addNoteBtn">افزودن یادداشت</button>
+        </div>
+        <ul id="notesList" class="notes-list"></ul>
+      </section>
+
+      <!-- Journal -->
+      <section class="card" style="grid-column:1 / -1">
+        <h2>📔 دفترچه خاطرات</h2>
+        <p class="hint">تاریخ شمسی را با انتخابگر تعیین کن، متن را در textarea بنویس.</p>
+        <div class="group-actions">
+          <select id="jrYear"></select>
+          <select id="jrMonth"></select>
+          <select id="jrDay"></select>
+          <input id="journalTime" type="time"/>
+          <input id="journalTitle" type="text" placeholder="عنوان"/>
+        </div>
+        <textarea id="journalBody" placeholder="متن خاطره..."></textarea>
+        <div class="group-actions">
+          <button id="addJournalBtn">ثبت خاطره</button>
+        </div>
+        <div id="journalList"></div>
+      </section>
+    </div>
+
+    <div class="footer">
+      <span>نکته: تیک‌های امروز به‌صورت خودکار ذخیره می‌شوند و هر روز صبح ریست می‌شوند.</span>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // ===== عناصر =====
+    const rootEl = document.getElementById('appRoot');
+    const todaySpan = document.getElementById('today');
+    const isHolidayEl = document.getElementById('isHoliday');
+    const workdaySec = document.getElementById('workday');
+    const holidaySec = document.getElementById('holiday');
+    const progressPctEl = document.getElementById('progressPct');
+    const progressFillEl = document.getElementById('progressFill');
+    const quoteTextEl = document.getElementById('quoteText');
+
+    // KPI bars (Goals)
+    const dailyGoalFill   = document.getElementById('dailyGoalFill');
+    const dailyGoalPctEl  = document.getElementById('dailyGoalPct');
+    const weeklyGoalFill  = document.getElementById('weeklyGoalFill');
+    const weeklyGoalPctEl = document.getElementById('weeklyGoalPct');
+    const monthlyGoalFill = document.getElementById('monthlyGoalFill');
+    const monthlyGoalPctEl= document.getElementById('monthlyGoalPct');
+
+    // Notes
+    const noteInput = document.getElementById('noteInput');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const notesListEl = document.getElementById('notesList');
+
+    // Journal
+    const jrYearEl = document.getElementById('jrYear');
+    const jrMonthEl = document.getElementById('jrMonth');
+    const jrDayEl = document.getElementById('jrDay');
+    const journalTimeEl = document.getElementById('journalTime');
+    const journalTitleEl = document.getElementById('journalTitle');
+    const journalBodyEl = document.getElementById('journalBody');
+    const addJournalBtn = document.getElementById('addJournalBtn');
+    const journalListEl = document.getElementById('journalList');
+
+    // Custom groups
+    const customGroupsTopEl = document.getElementById('customGroupsTop');
+    const newGroupTitleEl = document.getElementById('newGroupTitle');
+    const addGroupBtn = document.getElementById('addGroupBtn');
+
+    // Misc
+    const themeBtn = document.getElementById('themeBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const icsBtn = document.getElementById('icsBtn');
+    const resetTodayBtn = document.getElementById('resetToday');
+    const resetAllBtn = document.getElementById('resetAll');
+    const profileSelect = document.getElementById('profileSelect');
+    const newProfileBtn = document.getElementById('newProfileBtn');
+    const focusModeBtn = document.getElementById('focusModeBtn');
+
+    const weeklyChart = document.getElementById('weeklyChart');
+    const weeklyAvgEl = document.getElementById('weeklyAvg');
+    const monthChart = document.getElementById('monthChart');
+    const monthlyAvgEl = document.getElementById('monthlyAvg');
+    const medalRack = document.getElementById('medalRack');
+
+    // Reminders
+    const remYearEl      = document.getElementById('remYear');
+    const remMonthEl     = document.getElementById('remMonth');
+    const remDayEl       = document.getElementById('remDay');
+    const remTimeEl      = document.getElementById('remTime');
+    const remTextEl      = document.getElementById('remText');
+    const remDailyEl     = document.getElementById('remDaily');
+    const addReminderBtn = document.getElementById('addReminder');
+    const remindersListEl= document.getElementById('remindersList');
+
+    // ===== Goals (سه کادر) =====
+    const goalEls = {
+      daily:   { year:id('goalYearDaily'),   month:id('goalMonthDaily'),   day:id('goalDayDaily'),   input:id('goalInputDaily'),   btn:id('addGoalDailyBtn'),   list:id('goalListDaily') },
+      weekly:  { year:id('goalYearWeekly'),  month:id('goalMonthWeekly'),  day:id('goalDayWeekly'),  input:id('goalInputWeekly'),  btn:id('addGoalWeeklyBtn'),  list:id('goalListWeekly') },
+      monthly: { year:id('goalYearMonthly'), month:id('goalMonthMonthly'), day:id('goalDayMonthly'), input:id('goalInputMonthly'), btn:id('addGoalMonthlyBtn'), list:id('goalListMonthly') },
+    };
+
+    // ===== تاریخ امروز =====
+    const fmt = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full' });
+    todaySpan.textContent = fmt.format(new Date());
+
+    // ===== Storage Keys =====
+    let currentProfile = localStorage.getItem('dailyChecklist:currentProfile') || 'default';
+    function globalKey(name){ return `dailyChecklist:${currentProfile}:global:${name}`; }
+    function dayKey(dateStr){ return `dailyChecklist:${currentProfile}:${dateStr}:state`; }
+
+    // ===== پروفایل =====
+    function loadProfiles(){
+      const raw = localStorage.getItem('dailyChecklist:profiles');
+      const arr = raw ? JSON.parse(raw) : ['default'];
+      if(!arr.includes(currentProfile)) arr.push(currentProfile);
+      localStorage.setItem('dailyChecklist:profiles', JSON.stringify(arr));
+      profileSelect.innerHTML = arr.map(p=>`<option ${p===currentProfile?'selected':''} value="${p}">پروفایل: ${p}</option>`).join('');
+    }
+
+    // ===== State روزانه =====
+    const uid = ()=> (crypto.randomUUID ? crypto.randomUUID() : 'id_'+Date.now()+'_'+Math.random().toString(16).slice(2));
+    function defaultState(){ return {
+      holiday:false,
+      checks:{},
+      notesList:[],
+      custom:[],
+      theme:(localStorage.getItem(globalKey('theme'))||'dark')
+    }; }
+    function loadState(dateStr){ try{ const raw=localStorage.getItem(dayKey(dateStr)); if(!raw) return defaultState(); return Object.assign(defaultState(), JSON.parse(raw)||{});}catch{ return defaultState(); } }
+    function saveState(dateStr){ localStorage.setItem(dayKey(dateStr), JSON.stringify(state)); }
+    let state = loadState(dateISO());
+
+    // ===== Goals سراسریِ پروفایل =====
+    function goalsDefault(){ return { daily:[], weekly:[], monthly:[] }; }
+    function loadGoals(){ try{ return JSON.parse(localStorage.getItem(globalKey('goals'))) || goalsDefault(); } catch{ return goalsDefault(); } }
+    function saveGoals(g){ localStorage.setItem(globalKey('goals'), JSON.stringify(g)); }
+    let goals = loadGoals();
+
+    // ===== Helpers =====
+    function id(x){ return document.getElementById(x); }
+    function dateISO(d=new Date()){ return d.toISOString().slice(0,10); }
+    function applyTheme(){ rootEl.setAttribute('data-theme', state.theme==='light'?'light':null); }
+    function toggleTheme(){ state.theme = state.theme==='light'?'dark':'light'; localStorage.setItem(globalKey('theme'), state.theme); applyTheme(); }
+
+    // ===== Jalali <-> Gregorian =====
+    function toJalali(gy, gm, gd){
+      var g_d_m=[0,31,59,90,120,151,181,212,243,273,304,334];
+      var jy=(gy<=1600)?0:979; gy-=(gy<=1600)?621:1600; var gy2=(gm>2)?(gy+1):gy; var days=(365*gy)+parseInt((gy2+3)/4)-parseInt((gy2+99)/100)+parseInt((gy2+399)/400)-80+gd+g_d_m[gm-1];
+      jy+=33*parseInt(days/12053); days%=12053; jy+=4*parseInt(days/1461); days%=1461; jy+=parseInt((days-1)/365); if(days>365) days=(days-1)%365; var jm=(days<186)?1+parseInt(days/31):7+parseInt((days-186)/30); var jd=1+((days<186)?(days%31):((days-186)%30)); return {jy:jy+1,jm:jm,jd:jd};
+    }
+    function toGregorian(jy, jm, jd){
+      jy-= (jy>979)?979:0; var gy=(jy<=979)?621:1600; var days=(365*jy)+parseInt((jy/33))*8+parseInt(((jy%33)+3)/4)+79+jd+((jm<7)?((jm-1)*31):(((jm-7)*30)+186));
+      gy+=400*parseInt(days/146097); days%=146097; if(days>36524){ gy+=100*parseInt(--days/36524); days%=36524; if(days>=365) days++; }
+      gy+=4*parseInt(days/1461); days%=1461; if(days>365){ gy+=parseInt((days-1)/365); days=(days-1)%365; }
+      var sal_a=[0,31,(gy%4==0 && gy%100!=0)|| (gy%400==0)?29:28,31,30,31,30,31,31,30,31,30,31]; var gm; for(gm=1; gm<=12 && days>=sal_a[gm]; gm++){ days-=sal_a[gm]; } var gd=days+1; return {gy,gm,gd};
+    }
+    function jToISO(j){ if(!j) return dateISO(); var m=/(\d{4})-(\d{1,2})-(\d{1,2})/.exec(j); if(!m) return dateISO(); var jy=+m[1], jm=+m[2], jd=+m[3]; var g=toGregorian(jy,jm,jd); return `${g.gy}-${String(g.gm).padStart(2,'0')}-${String(g.gd).padStart(2,'0')}`; }
+    function isoToJ(iso){ var d=new Date(iso); if(isNaN(d)) d=new Date(); var y=d.getFullYear(),m=d.getMonth()+1,dd=d.getDate(); var j=toJalali(y,m,dd); return `${j.jy}-${String(j.jm).padStart(2,'0')}-${String(j.jd).padStart(2,'0')}`; }
+
+    function populateJalaliPickers(yearEl, monthEl, dayEl){
+      if(!yearEl||!monthEl||!dayEl) return;
+      const gNow = new Date();
+      const jNow = toJalali(gNow.getFullYear(), gNow.getMonth()+1, gNow.getDate());
+      const startY = jNow.jy - 1, endY = jNow.jy + 1;
+      yearEl.innerHTML = '';
+      for(let y=startY; y<=endY; y++){
+        const opt=document.createElement('option'); opt.value=String(y); opt.textContent=String(y); if(y===jNow.jy) opt.selected=true; yearEl.appendChild(opt);
+      }
+      monthEl.innerHTML='';
+      for(let m=1;m<=12;m++){ const opt=document.createElement('option'); opt.value=String(m); opt.textContent=String(m); if(m===jNow.jm) opt.selected=true; monthEl.appendChild(opt);}
+      function daysInJMonth(y,m){ if(m<=6) return 31; if(m<=11) return 30; return 29; }
+      function fillDays(){
+        const y=+yearEl.value, m=+monthEl.value;
+        const cnt=daysInJMonth(y,m);
+        dayEl.innerHTML='';
+        for(let d=1; d<=cnt; d++){ const opt=document.createElement('option'); opt.value=String(d); opt.textContent=String(d); dayEl.appendChild(opt); }
+        dayEl.value=String(jNow.jd);
+      }
+      monthEl.addEventListener('change', fillDays);
+      yearEl.addEventListener('change', fillDays);
+      fillDays();
+    }
+    function selectedJDate(yEl,mEl,dEl){ const y=yEl.value, m=mEl.value, d=dEl.value; return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+    // ===== Groups Render =====
+    function renderGroups(){
+      customGroupsTopEl.innerHTML = '';
+      (state.custom||[]).forEach(group=>{
+        if(!Array.isArray(group.tasks)) group.tasks = [];
+        const section = document.createElement('section'); section.className='card'; section.dataset.gid=group.id; section.draggable=true;
+
+        const head = document.createElement('div'); head.className='group-head';
+        const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='8px';
+        const master = document.createElement('input'); master.type='checkbox'; master.dataset.role='master'; master.id='g_'+group.id; master.checked=!!state.checks[master.id];
+        const title = document.createElement('span'); title.className='group-title'; title.textContent=group.title; title.dataset.gid=group.id; title.title='دابل‌کلیک برای ویرایش';
+        const delGroupBtn = document.createElement('button'); delGroupBtn.textContent='حذف تیتر'; delGroupBtn.className='danger btn-del-group'; delGroupBtn.type='button'; delGroupBtn.dataset.gid=group.id;
+        left.append(master,title);
+
+        const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='8px'; actions.style.flexWrap='wrap';
+        const addTaskInp = document.createElement('input'); addTaskInp.className='task-input'; addTaskInp.placeholder='افزودن زیرتیتر…'; addTaskInp.dataset.gid=group.id;
+        const addTaskBtn = document.createElement('button'); addTaskBtn.textContent='افزودن کار'; addTaskBtn.type='button'; addTaskBtn.className='btn-add-task'; addTaskBtn.dataset.gid=group.id;
+        actions.append(addTaskInp, addTaskBtn, delGroupBtn);
+        head.append(left, actions);
+        section.append(head);
+
+        const ul = document.createElement('ul'); ul.className='tasks'; ul.dataset.gid=group.id; ul.id='ul_'+group.id;
+        group.tasks.forEach(t=> ul.append(createTaskLi(group.id, t)));
+        section.append(ul);
+        customGroupsTopEl.prepend(section);
+      });
+    }
+    function createTaskLi(groupId, task){
+      const li = document.createElement('li'); li.dataset.gid=groupId; li.dataset.tid=task.id; li.draggable=true;
+      const cb = document.createElement('input'); cb.type='checkbox'; cb.dataset.role='task'; cb.id=task.id; cb.checked=!!state.checks[task.id];
+      const label = document.createElement('label'); label.className='task-label editable-task'; label.htmlFor=task.id; label.textContent=task.text; label.dataset.gid=groupId; label.dataset.tid=task.id; label.title='دابل‌کلیک برای ویرایش';
+      const delBtn = document.createElement('button'); delBtn.type='button'; delBtn.className='danger btn-del-task'; delBtn.textContent='حذف'; delBtn.dataset.gid=groupId; delBtn.dataset.tid=task.id;
+      li.append(cb,label,delBtn);
+      return li;
+    }
+
+    // ===== Goals: رندر/افزودن/حذف/تیک =====
+    function renderGoals(){
+      ['daily','weekly','monthly'].forEach(scope=>{
+        const arr = goals[scope]||[];
+        goalEls[scope].list.innerHTML = arr.map(g=>{
+          const badge = g.dueJDate ? ` <span class="badge" style="margin-inline-start:6px">${g.dueJDate}</span>` : '';
+          return `<li data-id="${g.id}">
+            <input type="checkbox" class="goal-toggle" ${g.done?'checked':''}/>
+            <span class="task-label">${escapeHtml(g.text)}${badge}</span>
+            <button class="danger goal-del" type="button">حذف</button>
+          </li>`;
+        }).join('');
+      });
+      updateGoalsBars();
+    }
+    function addGoal(scope){
+      const els = goalEls[scope];
+      const txt = (els.input.value||'').trim(); if(!txt) return;
+      const dueJDate = selectedJDate(els.year, els.month, els.day);
+      const item = {id:uid(), text:txt, done:false, dueJDate};
+      goals[scope]=goals[scope]||[]; goals[scope].unshift(item);
+      els.input.value='';
+      saveGoals(goals);
+      renderGoals();
+    }
+    function bindGoalLists(){
+      ['daily','weekly','monthly'].forEach(scope=>{
+        const listEl = goalEls[scope].list;
+        if(!listEl || listEl.dataset.bound) return;
+        listEl.dataset.bound = '1';
+        listEl.addEventListener('click', (e)=>{
+          // حذف
+          if(e.target.classList.contains('goal-del')){
+            const li=e.target.closest('li'); const id=li?.dataset.id;
+            if(id){ goals[scope]=(goals[scope]||[]).filter(x=>x.id!==id); saveGoals(goals); li.remove(); updateGoalsBars(); }
+            return;
+          }
+          // تیک
+          if(e.target.classList.contains('goal-toggle')){
+            const li=e.target.closest('li'); const id=li?.dataset.id;
+            const it=(goals[scope]||[]).find(x=>x.id===id);
+            if(it){ it.done = e.target.checked; saveGoals(goals); updateGoalsBars(); }
+          }
+        });
+      });
+    }
+
+    // ===== رویدادهای کلی =====
+    document.addEventListener('click', (e)=>{
+      // افزودن زیرکار
+      const addBtn = e.target.closest('.btn-add-task');
+      if(addBtn){
+        e.preventDefault();
+        const gid = addBtn.dataset.gid; const section = addBtn.closest('section.card[data-gid]'); if(!gid||!section) return;
+        const inp = section.querySelector('.task-input[data-gid="'+gid+'"]'); if(!inp) return;
+        const text = (inp.value||'').trim(); if(!text) return;
+        const g = (state.custom||[]).find(x=>x.id===gid); if(!g) return;
+        const task = { id: uid(), text };
+        if(!Array.isArray(g.tasks)) g.tasks = [];
+        g.tasks.push(task);
+        state.checks[task.id] = !!state.checks['g_'+gid];
+        const ul = section.querySelector('ul.tasks[data-gid="'+gid+'"]');
+        if(ul){ ul.append(createTaskLi(gid, task)); }
+        inp.value='';
+        updateProgress(); saveState(dateISO());
+        return;
+      }
+
+      // حذف تیتر سفارشی
+      const delGroup = e.target.closest('.btn-del-group');
+      if(delGroup){
+        e.preventDefault();
+        const gid = delGroup.dataset.gid; if(!gid) return;
+        if(typeof window.confirm !== 'function' || window.confirm('کل تیتر و کارهایش حذف شود؟')){
+          delete state.checks['g_'+gid];
+          const g = (state.custom||[]).find(x=>x.id===gid); if(g && Array.isArray(g.tasks)) g.tasks.forEach(t=> delete state.checks[t.id]);
+          state.custom = (state.custom||[]).filter(x=>x.id!==gid);
+          renderGroups(); updateProgress(); saveState(dateISO());
+        }
+        return;
+      }
+
+      // حذف زیرکار
+      const delTask = e.target.closest('.btn-del-task');
+      if(delTask){
+        e.preventDefault();
+        const gid = delTask.dataset.gid; const tid = delTask.dataset.tid; if(!gid||!tid) return;
+        const g = (state.custom||[]).find(x=>x.id===gid); if(!g) return;
+        g.tasks = (g.tasks||[]).filter(x=>x.id!==tid);
+        delete state.checks[tid];
+        delTask.closest('li')?.remove();
+        updateProgress(); saveState(dateISO());
+        return;
+      }
+
+      // افزودن تیتر سفارشی
+      if(e.target===addGroupBtn){
+        const title = (newGroupTitleEl.value||'').trim();
+        if(!title) return alert('نام تیتر را وارد کن');
+        const g = { id: uid(), title, tasks: [] };
+        state.custom = state.custom || [];
+        state.custom.unshift(g);
+        newGroupTitleEl.value='';
+        renderGroups(); saveState(dateISO());
+        return;
+      }
+
+      // Goals: افزودن هر کادر
+      if(e.target===goalEls.daily.btn){ addGoal('daily'); return; }
+      if(e.target===goalEls.weekly.btn){ addGoal('weekly'); return; }
+      if(e.target===goalEls.monthly.btn){ addGoal('monthly'); return; }
+
+      // خروجی/ورودی/تم/تمرکز/ICS/نوت/یادآور/ریست
+      if(e.target===exportBtn){
+        const payload = { version:'7.4.3', date:dateISO(), profile: currentProfile, state, goals, journal:loadJournal(), reminders:loadReminders() };
+        const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download=`daily-${currentProfile}-${dateISO()}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        return;
+      }
+      if(e.target===importBtn){ importFile.click(); return; }
+      if(e.target===themeBtn){ toggleTheme(); saveState(dateISO()); return; }
+      if(e.target===focusModeBtn){ toggleFocusMode(); return; }
+      if(e.target===addReminderBtn){ addReminderFromUI(); return; }
+      if(e.target===icsBtn){ exportICS(); return; }
+      if(e.target===addNoteBtn){ addNoteFromUI(); return; }
+      if(e.target===resetTodayBtn){ // فقط تیک‌های کارهای امروز
+        if(confirm('تیک‌های امروز پاک شود؟')){
+          Object.keys(state.checks).forEach(k=> state.checks[k]=false);
+          saveState(dateISO()); location.reload();
+        }
+        return;
+      }
+      if(e.target===resetAllBtn){ if(confirm('همه چیز پاک شود؟')){ Object.keys(localStorage).forEach(k=>{ if(k.startsWith(`dailyChecklist:${currentProfile}:`)) localStorage.removeItem(k); }); location.reload(); } }
+    });
+
+    importFile.addEventListener('change', (e)=>{
+      const file = e.target.files && e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const data = JSON.parse(reader.result);
+          if(data){
+            if(data.state) state = Object.assign(defaultState(), data.state);
+            if(data.goals){ goals = Object.assign(goalsDefault(), data.goals); saveGoals(goals); }
+            if(data.journal) saveJournal(data.journal);
+            if(data.reminders) saveReminders(data.reminders);
+            applyTheme();
+            renderGroups(); syncDOMFromChecks();
+            renderGoals(); bindGoalLists(); renderNotes(); renderJournal(); renderReminders();
+            updateProgress(); updateGoalsBars(); saveState(dateISO());
+          }
+        }catch(err){ alert('ورودی نامعتبر است'); }
+      };
+      reader.readAsText(file);
+      importFile.value='';
+    });
+
+    // Edit title / task by double click
+    document.addEventListener('dblclick', (e)=>{
+      const title = e.target.closest('.group-title');
+      if(title){
+        const gid = title.dataset.gid; if(!gid) return;
+        const old = title.textContent; const input = document.createElement('input'); input.type='text'; input.value=old; input.style.minWidth='160px';
+        title.replaceWith(input); input.focus();
+        const commit = ()=>{ const val = (input.value||'').trim() || old; const s = (state.custom||[]).find(x=>x.id===gid); if(s){ s.title = val; } const span = document.createElement('span'); span.className='group-title'; span.textContent=val; span.dataset.gid=gid; span.title='دابل‌کلیک برای ویرایش'; input.replaceWith(span); saveState(dateISO()); };
+        input.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ commit(); }});
+        input.addEventListener('blur', commit);
+        return;
+      }
+      const taskLbl = e.target.closest('.editable-task');
+      if(taskLbl){
+        const gid = taskLbl.dataset.gid; const tid = taskLbl.dataset.tid || taskLbl.getAttribute('for'); if(!gid) return;
+        const old = taskLbl.textContent; const input = document.createElement('input'); input.type='text'; input.value=old; input.style.minWidth='160px';
+        taskLbl.replaceWith(input); input.focus();
+        const commit = ()=>{
+          const val=(input.value||'').trim()||old;
+          const g=(state.custom||[]).find(x=>x.id===gid);
+          if(g && tid){ const t=(g.tasks||[]).find(x=>x.id===tid); if(t) t.text=val; }
+          const lbl=document.createElement('label'); lbl.className='task-label editable-task'; if(tid) lbl.htmlFor=tid; lbl.textContent=val; lbl.dataset.gid=gid; if(tid) lbl.dataset.tid=tid; lbl.title='دابل‌کلیک برای ویرایش'; input.replaceWith(lbl); saveState(dateISO());
+        };
+        input.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ commit(); }});
+        input.addEventListener('blur', commit);
+      }
+    });
+
+    // Checkboxes for tasks/master
+    document.addEventListener('change', (e)=>{
+      const cb = e.target; if(!(cb instanceof HTMLInputElement) || cb.type!=='checkbox') return;
+      if(cb.dataset.role==='task'){
+        state.checks[cb.id] = cb.checked;
+        updateProgress(); saveState(dateISO());
+      }
+      if(cb.dataset.role==='master'){
+        state.checks[cb.id] = cb.checked; const gid = cb.id.replace('g_',''); const g = (state.custom||[]).find(x=>x.id===gid);
+        if(g){ (g.tasks||[]).forEach(t=> { state.checks[t.id]=cb.checked; }); const section=document.querySelector('section.card[data-gid="'+gid+'"]'); if(section){ section.querySelectorAll('ul.tasks input[data-role="task"]').forEach(x=> x.checked=cb.checked); } }
+        updateProgress(); saveState(dateISO());
+      }
+    });
+
+    // Drag & Drop
+    document.addEventListener('dragstart', (e)=>{
+      const sec = e.target.closest('section.card[data-gid]');
+      if(sec){ e.dataTransfer.setData('text/plain','group:'+sec.dataset.gid); return; }
+      const li = e.target.closest('li[data-gid][data-tid]');
+      if(li){ e.dataTransfer.setData('text/plain','task:'+li.dataset.gid+':'+li.dataset.tid); }
+    });
+    document.addEventListener('dragover', (e)=>{ const sec=e.target.closest('section.card[data-gid]'); const li=e.target.closest('li[data-gid][data-tid]'); if(sec||li){ e.preventDefault(); (sec||li).classList.add('drag-over'); }});
+    document.addEventListener('dragleave', (e)=>{ const x = e.target.closest('.drag-over'); if(x) x.classList.remove('drag-over'); });
+    document.addEventListener('drop', (e)=>{
+      const sec = e.target.closest('section.card[data-gid]'); const li = e.target.closest('li[data-gid][data-tid]');
+      document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+      const dt = (e.dataTransfer && e.dataTransfer.getData('text/plain'))||'';
+      if(dt.startsWith('group:') && sec){
+        e.preventDefault(); const fromId = dt.split(':')[1]; const toId = sec.dataset.gid; if(fromId && toId && fromId!==toId){
+          const fromIdx = (state.custom||[]).findIndex(x=>x.id===fromId); const toIdx = (state.custom||[]).findIndex(x=>x.id===toId);
+          if(fromIdx>-1 && toIdx>-1){ const [g]=state.custom.splice(fromIdx,1); state.custom.splice(toIdx,0,g); renderGroups(); saveState(dateISO()); syncDOMFromChecks(); }
+        }
+      }
+      if(dt.startsWith('task:') && li){
+        e.preventDefault(); const [,gid,tid] = dt.split(':'); const targetGid = li.dataset.gid; if(gid===targetGid){
+          const g = (state.custom||[]).find(x=>x.id===gid); if(!g) return; const fromIdx = (g.tasks||[]).findIndex(x=>x.id===tid); const toIndex = Array.from(li.parentElement.children).indexOf(li);
+          if(fromIdx>-1 && toIndex>-1){ const [t]=g.tasks.splice(fromIdx,1); g.tasks.splice(toIndex,0,t); renderGroups(); saveState(dateISO()); syncDOMFromChecks(); }
+        }
+      }
+    });
+
+    // Charts & progress
+    function getAllTaskCheckboxes(){ return Array.from(document.querySelectorAll('input[type="checkbox"][data-role="task"]')); }
+    function computeProgressPercent(){ const all=getAllTaskCheckboxes(); const total=all.length; const done=all.filter(i=>i.checked).length; return total?Math.round((done/total)*100):0; }
+    function updateProgress(){ const pct=computeProgressPercent(); progressPctEl.textContent=pct+'٪'; if(progressFillEl) progressFillEl.style.width=pct+'%'; localStorage.setItem(`dailyChecklist:${currentProfile}:${dateISO()}:percent`, String(pct)); maybeAwardMedal(pct); drawWeekly(); drawMonthlyChart(); }
+
+    function maybeAwardMedal(pct){
+      const medals = JSON.parse(localStorage.getItem(globalKey('medals'))||'[]');
+      const todayMedalKey = globalKey('medal:'+dateISO());
+      if(pct===100 && !localStorage.getItem(todayMedalKey)){
+        medals.push({date:dateISO(), type:'⭐ روز کامل'});
+        localStorage.setItem(globalKey('medals'), JSON.stringify(medals));
+        localStorage.setItem(todayMedalKey,'1');
+      }
+      medalRack.innerHTML = medals.map(m=>`<span class="badge">${m.type} (${m.date})</span>`).join('');
+    }
+
+    function drawWeekly(){
+      try{
+        const ctx = weeklyChart.getContext('2d');
+        ctx.clearRect(0,0,weeklyChart.width,weeklyChart.height);
+        const days = [...Array(7)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()- (6-i)); return dateISO(d); });
+        const vals = days.map(k=> Number(localStorage.getItem(`dailyChecklist:${currentProfile}:${k}:percent`)||0));
+        const w = weeklyChart.width, h = weeklyChart.height; const pad=16; const bw = (w - pad*2)/7 - 6; const max=100; ctx.font='12px Vazirmatn';
+        let sum=0; days.forEach((k,idx)=>{ const v=vals[idx]; sum+=v; const x = pad + idx*((w-pad*2)/7); const barH = (v/max)*(h-28); const y = h-18-barH; ctx.fillStyle='#888'; ctx.fillRect(x, y, bw, barH); ctx.fillStyle=getComputedStyle(rootEl).getPropertyValue('--text'); ctx.fillText(String(v), x, h-4); });
+        const avg = Math.round(sum/7); weeklyAvgEl.textContent = 'میانگین: '+avg+'٪';
+      }catch{}
+    }
+
+    function drawMonthlyChart(){
+      try{
+        const ctx = monthChart.getContext('2d'); ctx.clearRect(0,0,monthChart.width,monthChart.height);
+        const days = [...Array(30)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()- (29-i)); return dateISO(d); });
+        const vals = days.map(k=> Number(localStorage.getItem(`dailyChecklist:${currentProfile}:${k}:percent`)||0));
+        const w = monthChart.width, h = monthChart.height; const pad=10; const step = (w - pad*2)/29; const max=100; ctx.strokeStyle = getComputedStyle(rootEl).getPropertyValue('--accent-2'); ctx.beginPath();
+        let sum=0; vals.forEach((v,i)=>{ sum+=v; const x = pad + i*step; const y = h-20 - (v/max)*(h-30); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+        monthlyAvgEl.textContent = 'میانگین: '+Math.round(sum/30)+'٪';
+      }catch{}
+    }
+
+    async function setQuote(){ try{ const r=await fetch('https://api.quotable.io/random?tags=inspirational'); if(!r.ok) throw new Error('network'); const j=await r.json(); quoteTextEl.textContent=j.content; }catch{ const fallback=['هر روز یک درصد بهتر؛ جمع این یک‌درصدها معجزه می‌سازد.','اگر امروز فقط شروع کنی، نیمه راهی.','نظم، آزادیِ آینده‌ته.','آینده‌ات پاداش عادت‌های امروزه.','کامل بودن لازم نیست؛ پیوستگی لازم است.']; quoteTextEl.textContent=fallback[(new Date().getDay())%fallback.length]; } }
+
+    // Holiday
+    function toggleHoliday(){ const hol=isHolidayEl.checked; holidaySec.style.display = hol?'block':'none'; workdaySec.style.display = hol?'none':'block'; state.holiday=hol; saveState(dateISO()); }
+
+    // Focus Mode
+    function toggleFocusMode(){ if(rootEl.classList.contains('focus-on')){ rootEl.classList.remove('focus-on'); document.querySelectorAll('.card').forEach(c=>c.classList.remove('focus-target')); focusModeBtn.textContent='حالت تمرکز'; } else { const first = document.querySelector('.card'); if(first){ rootEl.classList.add('focus-on'); first.classList.add('focus-target'); focusModeBtn.textContent='خروج از تمرکز'; } } }
+    document.addEventListener('click', (e)=>{ if(!rootEl.classList.contains('focus-on')) return; const label=e.target.closest('.card h2, .editable-task'); if(label){ document.querySelectorAll('.card').forEach(c=>c.classList.remove('focus-target')); const card=label.closest('.card'); if(card){ card.classList.add('focus-target'); } } });
+
+    // ===== Reminders =====
+    function loadReminders(){ return JSON.parse(localStorage.getItem(globalKey('reminders'))||'[]'); }
+    function saveReminders(arr){ localStorage.setItem(globalKey('reminders'), JSON.stringify(arr)); }
+    function renderReminders(){ const arr=loadReminders(); remindersListEl.innerHTML = arr.map((r,i)=>`<li data-idx="${i}">🕑 ${(r.daily?'هر روز':(r.jdate))+' '+r.time} — ${r.text||''} <button class="danger btn-del-rem">حذف</button></li>`).join(''); }
+    function selectedJDateUI(){ const y=remYearEl.value, m=remMonthEl.value, d=remDayEl.value; return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+    function addReminderFromUI(){
+      const t=(remTimeEl.value||'').trim(); if(!t) return alert('ساعت را انتخاب کن');
+      const txt=(remTextEl.value||'').trim();
+      const daily= !!remDailyEl.checked;
+      const jdate = daily ? isoToJ(dateISO()) : selectedJDateUI();
+      const iso = jToISO(jdate);
+      const arr=loadReminders(); arr.push({time:t,text:txt, daily, jdate, date: iso}); saveReminders(arr);
+      remTextEl.value=''; remDailyEl.checked=false; renderReminders(); ensureNotifPermission();
+    }
+    remindersListEl.addEventListener('click',(e)=>{ const btn=e.target.closest('.btn-del-rem'); if(!btn) return; const li=btn.closest('li'); const idx=Number(li.dataset.idx); const arr=loadReminders(); arr.splice(idx,1); saveReminders(arr); renderReminders(); });
+    function ensureNotifPermission(){ if(!('Notification' in window)) return; if(Notification.permission==='default'){ Notification.requestPermission(); } }
+    function startReminderTicker(){ if(!('Notification' in window)) return; setInterval(()=>{ const arr=loadReminders(); const now=new Date(); const hh=String(now.getHours()).padStart(2,'0'); const mm=String(now.getMinutes()).padStart(2,'0'); const cur=hh+':'+mm; const todayIso=dateISO(); const todayJ = isoToJ(todayIso); arr.forEach((r)=>{ const matchTime = r.time===cur; const matchDate = r.daily || (!r.daily && (r.jdate===todayJ)); if(matchTime && matchDate){ const key=globalKey('remFired:'+ (r.daily?'daily':r.jdate) +':'+cur+':'+todayIso); if(!localStorage.getItem(key)){ if(Notification.permission==='granted'){ new Notification('یادآور', { body:r.text||'زمان انجام برنامه‌ات رسید ✨' }); } else { alert('یادآور: '+(r.text||'')); } localStorage.setItem(key,'1'); } } }); }, 30000); }
+
+    // Calendar (ICS export)
+    function exportICS(){
+      const lines=[]; lines.push('BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN');
+      const dt=dateISO().replace(/-/g,'');
+      const tasks = Array.from(document.querySelectorAll('label.task-label')).map(l=> l.textContent.trim());
+      tasks.forEach((t,i)=>{ lines.push('BEGIN:VEVENT'); lines.push('UID:'+currentProfile+'-'+dt+'-'+i); lines.push('DTSTAMP:'+dt+'T080000Z'); lines.push('DTSTART:'+dt+'T080000'); lines.push('SUMMARY:'+t); lines.push('END:VEVENT'); });
+      lines.push('END:VCALENDAR'); const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`checklist-${currentProfile}-${dt}.ics`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    // ===== Goals progress =====
+    function computeGoalsPct(scope){
+      const arr = goals[scope] || [];
+      const total = arr.length;
+      const done  = arr.filter(x=>x.done).length;
+      const pct   = total ? Math.round(done/total*100) : 0;
+      return {total, done, pct};
+    }
+    function updateGoalsBars(){
+      const d=computeGoalsPct('daily');   dailyGoalPctEl.textContent   = d.total? `${d.pct}٪ (${d.done}/${d.total})`:'—'; dailyGoalFill.style.width   = d.pct+'%';
+      const w=computeGoalsPct('weekly');  weeklyGoalPctEl.textContent  = w.total? `${w.pct}٪ (${w.done}/${w.total})`:'—'; weeklyGoalFill.style.width  = w.pct+'%';
+      const m=computeGoalsPct('monthly'); monthlyGoalPctEl.textContent = m.total? `${m.pct}٪ (${m.done}/${m.total})`:'—'; monthlyGoalFill.style.width = m.pct+'%';
+    }
+
+    // Notes
+    function renderNotes(){ const arr = state.notesList||[]; notesListEl.innerHTML = arr.map((n,i)=>`<li data-i="${i}"><span class="text">${escapeHtml(n.text)}</span><button class="danger btn-del-note">حذف</button></li>`).join(''); }
+    function addNoteFromUI(){ const t=(noteInput.value||'').trim(); if(!t) return; state.notesList = state.notesList||[]; state.notesList.unshift({id:uid(), text:t, ts:Date.now()}); noteInput.value=''; renderNotes(); saveState(dateISO()); }
+    notesListEl.addEventListener('click',(e)=>{ const b=e.target.closest('.btn-del-note'); if(!b) return; const i=Number(b.closest('li').dataset.i); (state.notesList||[]).splice(i,1); renderNotes(); saveState(dateISO()); });
+
+    // Journal
+    function loadJournal(){ return JSON.parse(localStorage.getItem(globalKey('journal'))||'[]'); }
+    function saveJournal(arr){ localStorage.setItem(globalKey('journal'), JSON.stringify(arr)); }
+    function renderJournal(){
+      const arr=loadJournal();
+      journalListEl.innerHTML='';
+      if(!arr.length){ journalListEl.innerHTML='<div class="hint">فعلاً خاطره‌ای ثبت نشده.</div>'; return; }
+      arr.forEach((j,idx)=>{
+        const wrap=document.createElement('div'); wrap.className='journal-entry'; wrap.dataset.idx=String(idx);
+        const meta=document.createElement('div'); meta.className='hint'; meta.textContent=(j.jdate||'')+' • '+(j.time||'');
+        const title=document.createElement('div'); const strong=document.createElement('strong'); strong.textContent=j.title||'بدون عنوان'; title.appendChild(strong);
+        const body=document.createElement('div'); const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0'; pre.textContent=j.body||''; body.appendChild(pre);
+        const actions=document.createElement('div'); actions.style.marginTop='6px'; const del=document.createElement('button'); del.className='danger btn-del-journal'; del.textContent='حذف'; actions.appendChild(del);
+        wrap.append(meta,title,body,actions); journalListEl.appendChild(wrap);
+      });
+    }
+    addJournalBtn.addEventListener('click', ()=>{
+      const jdate = selectedJDate(jrYearEl, jrMonthEl, jrDayEl);
+      const title=(journalTitleEl.value||'').trim();
+      const time=(journalTimeEl.value||'').trim();
+      const body=(journalBodyEl.value||'').trim();
+      if(!body && !title) return alert('حداقل عنوان یا متن را بنویس');
+      const arr=loadJournal(); arr.unshift({id:uid(), jdate, time, title, body}); saveJournal(arr);
+      journalTitleEl.value=''; journalBodyEl.value=''; renderJournal();
+    });
+    journalListEl.addEventListener('click',(e)=>{ const b=e.target.closest('.btn-del-journal'); if(!b) return; const idx=Number(b.closest('.journal-entry').dataset.idx); const arr=loadJournal(); arr.splice(idx,1); saveJournal(arr); renderJournal(); });
+
+    // ===== Init =====
+    (function init(){
+      loadProfiles();
+      applyTheme();
+
+      // Jalali pickers
+      populateJalaliPickers(remYearEl, remMonthEl, remDayEl);
+      populateJalaliPickers(jrYearEl, jrMonthEl, jrDayEl);
+      populateJalaliPickers(goalEls.daily.year,  goalEls.daily.month,  goalEls.daily.day);
+      populateJalaliPickers(goalEls.weekly.year, goalEls.weekly.month, goalEls.weekly.day);
+      populateJalaliPickers(goalEls.monthly.year,goalEls.monthly.month,goalEls.monthly.day);
+
+      isHolidayEl.checked = !!state.holiday;
+      toggleHoliday();
+      isHolidayEl.addEventListener('change', toggleHoliday);
+
+      // Render
+      renderGroups();  syncDOMFromChecks();
+      renderNotes();   renderGoals(); bindGoalLists();
+      renderJournal(); renderReminders();
+
+      // Charts & reminders & progress
+      updateProgress(); setQuote(); drawWeekly(); drawMonthlyChart(); ensureNotifPermission(); startReminderTicker(); updateGoalsBars();
+
+      // Profile switching
+      profileSelect.addEventListener('change', ()=>{
+        currentProfile = profileSelect.value;
+        localStorage.setItem('dailyChecklist:currentProfile', currentProfile);
+        state = loadState(dateISO());
+        goals = loadGoals();
+        applyTheme(); renderGroups(); syncDOMFromChecks(); updateProgress(); setQuote(); renderReminders(); drawWeekly(); drawMonthlyChart(); renderNotes(); renderGoals(); bindGoalLists(); updateGoalsBars(); renderJournal();
+      });
+      newProfileBtn.addEventListener('click', ()=>{
+        const name = prompt('نام پروفایل جدید؟ (حروف/اعداد)');
+        if(!name) return;
+        const arr = JSON.parse(localStorage.getItem('dailyChecklist:profiles')||'[]');
+        if(!arr.includes(name)){ arr.push(name); localStorage.setItem('dailyChecklist:profiles', JSON.stringify(arr)); }
+        currentProfile = name; localStorage.setItem('dailyChecklist:currentProfile', currentProfile);
+        loadProfiles();
+        state = loadState(dateISO());
+        goals = goalsDefault(); saveGoals(goals);
+        renderGroups(); syncDOMFromChecks(); updateProgress(); setQuote(); renderReminders(); drawWeekly(); drawMonthlyChart(); applyTheme(); renderNotes(); renderGoals(); bindGoalLists(); updateGoalsBars(); renderJournal();
+      });
+    })();
+
+    function syncDOMFromChecks(){ document.querySelectorAll('input[type="checkbox"][data-role="task"]').forEach(cb=>{ cb.checked = !!state.checks[cb.id]; }); document.querySelectorAll('input[type="checkbox"][data-role="master"]').forEach(cb=>{ cb.checked = !!state.checks[cb.id]; }); }
+    function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  })();
+  </script>
+</body>
+</html>
